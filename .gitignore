@@ -164,10 +164,4 @@ cython_debug/
 
 # ====================
 # not available for now
-*.toml
-*.md
-test
-
 *.xlsx
-*.txt
-*.todo
