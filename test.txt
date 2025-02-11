@@ -1,44 +1,44 @@
-* 仿真
-    * 开源
-        * pybullet - bullet
-        * ODE
-            * gazebo 原版ODE
-            * webots 魔改过的ODE - 多线程
-            * coppeliasim （V-REP）
-    * 不开源
-        * Mujoco (Google Deepmind)
-        * physx（unity/UE） 废弃
-            * isaac sim
-            * isaac gym
-            * NVIDIA - omniverse
-        * Raisim - ETHZ
-    * 其他
-        * airsim
-* 可微 - 动力学库
-    * drake
-    * pinocchio
+- 关键点
+    - 通信
+        - ROS
+        - ROS2
+        - Network
+    - 消息类型
+        - joint_state
+        - link_state
+        - sensor data
+        - perception
+    - 机器人格式定义
+        - urdf(xacro)
+        - sdf(gazebo)
+        - wbt
+        - 传感器
+        - 执行器
+    - 仿真物体的类型
+        - 软体
+        - 流体
+        - 布料
+    - 可视化
+        - 前后端分离
+        - 美观程度
+        - 真实程度
 
-* 关键点
-    * 通信
-        * ROS
-        * ROS2
-        * Network
-    * 消息类型
-        * joint_state
-        * link_state
-        * sensor data
-        * perception
-    * 机器人格式定义
-        * urdf(xacro)
-        * sdf(gazebo)
-        * wbt
-        * 传感器
-        * 执行器
-    * 仿真物体的类型
-        * 软体
-        * 流体
-        * 布料
-    * 可视化
-        * 前后端分离
-        * 美观程度
-        * 真实程度
+- 仿真
+    - 开源
+        - pybullet - bullet
+        - ODE
+            - gazebo 原版ODE
+            - webots 魔改过的ODE - 多线程
+            - coppeliasim （V-REP）
+    - 不开源
+        - Mujoco (Google Deepmind)
+        - physx（unity/UE） 废弃
+            - isaac sim
+            - isaac gym
+            - NVIDIA - omniverse
+        - Raisim - ETHZ
+    - 其他
+        - airsim
+- 可微 - 动力学库
+    - drake
+    - pinocchio

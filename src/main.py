@@ -1,4 +1,3 @@
-import sys
 import argparse
 
 import utils.excel
@@ -17,14 +16,14 @@ def cli():
 
 
 def main(args):
-    # from file get fields  (column comes first)
-    files = utils.files.textLoader(args.input_file)
+    # 从文件读取的列标题和行标题
+    sections = utils.files.textLoader(args.input_file)
 
-    column = SheetTree(files[0])  # number
-    row = SheetTree(files[1])  # alpha
+    row = SheetTree(sections[0])  # 行标题
+    column = SheetTree(sections[1])  # 列标题
 
-    # write to .xlsx
-    utils.excel.generate_requirement_matrix(column, row, args)
+    # 通过文件生成需求矩阵
+    utils.excel.generate_requirement_matrix(column, row, output_path=args.output_path, name=args.name, title=args.title)
 
 
 if __name__ == "__main__":

@@ -9,14 +9,14 @@ from utils.Sheettree import SheetTree
 
 def is_merged_cell(ws: Workbook, cell: str) -> bool:
     """
-    检查某个单元格是否是合并单元格
+    检查某个单元格是否是合并单元格。
 
     Args:
-        - ws (Workbook): 包含工作表的工作簿
-        - cell (str): 需要检查的具体单元格，比如`A1`
+        ws (Workbook): 包含工作表的工作簿。
+        cell (str): 需要检查的具体单元格，比如 `A1` 。
 
     Returns:
-        bool: 如果指定单元格在合并单元格内则返回 `True` 否则返回 `False`
+        bool: 如果指定单元格在合并单元格内则返回 `True` 否则返回 `False` 。
     """
     cell = ws[cell]
     for merged_range in ws.merged_cells.ranges:
@@ -28,29 +28,18 @@ def is_merged_cell(ws: Workbook, cell: str) -> bool:
     return False
 
 
-def delete_exist(path: str) -> None:
+def create_workbook(column: SheetTree, row: SheetTree, title: str, path: str):
     """
-    Delete the exist Excel file.
+    从结构树生成需求矩阵，并写入新建的工作簿。
 
     Args:
-        - path (str): Path to the file.
-    """
-    if Path.exists(path):
-        Path.unlink(path)
-        print(f'Note: "{path}" exists, and has been regenerated.')
-
-
-def create_workbook(column: SheetTree, row: SheetTree, title: str) -> Workbook:
-    """
-    Create workbook.
-
-    Args:
-        - column (SheetTree): number
-        - row (SheetTree): alpha
-        - title (str): title of the martix
+        column (SheetTree): 处理好的列结构。
+        row (SheetTree): 处理好的行结构。
+        title (str): 矩阵的标题。
+        path (str): 保存的路径。
 
     Returns:
-        - Workbook: Requirement_Martrix_Generator.
+        Workbook: 包含需求矩阵的新建工作簿对象。
     """
     workbook = Workbook()
     worksheet = workbook.active
@@ -62,7 +51,7 @@ def create_workbook(column: SheetTree, row: SheetTree, title: str) -> Workbook:
     worksheet["A1"] = title
     worksheet.merge_cells("A1:" + utils.math.number_to_alpha(column_length) + str(row_height))
 
-    # ========== create columns' data ==========
+    # ========== 创建行标题 ==========
     sheet_number = row_height
     for i in range(column.node_nums):
         sheet_alpha = utils.math.number_to_alpha(column.node_level[i], 1)
@@ -72,8 +61,7 @@ def create_workbook(column: SheetTree, row: SheetTree, title: str) -> Workbook:
         worksheet[sheet] = column.tree_data[i]
     column_height = sheet_number - row_height
 
-    # merge cells
-    # each row from right to left
+    # 合并空白单元格：每行从右往左检查
     for i in range(column_height):
         tail_sheet_alpha = utils.math.number_to_alpha(column_length)
         tail_sheet_number = column_length + i
@@ -87,7 +75,7 @@ def create_workbook(column: SheetTree, row: SheetTree, title: str) -> Workbook:
                     worksheet.merge_cells(head_sheet + ":" + tail_sheet)
                     break
 
-    # each column from top to bottom
+    # 合并空白单元格：每列从上往下检查
     for i in range(1, column_length):
         head_sheet_alpha = utils.math.number_to_alpha(i)
         head_sheet_number = tail_sheet_number = row_height + 1
@@ -102,7 +90,7 @@ def create_workbook(column: SheetTree, row: SheetTree, title: str) -> Workbook:
                 head_sheet_number = tail_sheet_number
                 head_sheet = head_sheet_alpha + str(head_sheet_number)
 
-    # ========== create rows' data ==========
+    # ========== 创建列标题 ==========
     sheet_alpha = utils.math.number_to_alpha(column_length)
     for i in range(row.node_nums):
         sheet_number = row.node_level[i] + 1
@@ -112,8 +100,7 @@ def create_workbook(column: SheetTree, row: SheetTree, title: str) -> Workbook:
         worksheet[sheet] = row.tree_data[i]
     row_length = utils.math.alpha_to_number(sheet_alpha) - column_length
 
-    # merge cells
-    # each row from bottom to top
+    # 合并空白单元格：每行自底向上检查
     for i in range(1, row_length):
         tail_sheet_alpha = utils.math.number_to_alpha(column_length, i)
         tail_sheet_number = row_height
@@ -127,7 +114,7 @@ def create_workbook(column: SheetTree, row: SheetTree, title: str) -> Workbook:
                     worksheet.merge_cells(head_sheet + ":" + tail_sheet)
                     break
 
-    # each row from left to right
+    # 合并空白单元格：每行从左往右检查
     for i in range(1, row_height):
         head_sheet_alpha = tail_sheet_alpha = utils.math.number_to_alpha(column_length, 1)
         head_sheet_number = i
@@ -142,7 +129,7 @@ def create_workbook(column: SheetTree, row: SheetTree, title: str) -> Workbook:
                 head_sheet_alpha = tail_sheet_alpha
                 head_sheet = head_sheet_alpha + str(head_sheet_number)
 
-    # ========== format ==========
+    # ========== 调整格式 ==========
     alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
     border = Border(left=Side(border_style="thin"), right=Side(border_style="thin"), top=Side(border_style="thin"), bottom=Side(border_style="thin"))
     for row in worksheet.iter_rows(min_row=1, max_row=column_height + row_height, min_col=1, max_col=column_length + row_length):
@@ -150,21 +137,24 @@ def create_workbook(column: SheetTree, row: SheetTree, title: str) -> Workbook:
             cell.alignment = alignment
             cell.border = border
 
-    return workbook
+    workbook.save(path)
 
 
-def generate_requirement_matrix(column: SheetTree, row: SheetTree, args):
-    # deal with path
-    path, name, title = args.output_path, args.name, args.title
+def generate_requirement_matrix(column: SheetTree, row: SheetTree, **kwargs):
+    """
+    生成需求矩阵。
+
+    Args:
+        column (SheetTree): 处理好的列结构。
+        row (SheetTree): 处理好的行结构。
+        kwargs: 额外的参数：output_path, name, title，来自用于传入 args.
+    """
+    # 生成路径
+    path, name, title = kwargs["output_path"], kwargs["name"], kwargs["title"]
     if not name.endswith(".xlsx"):
         name += ".xlsx"
     path = Path(path) / name
     full_path = path.resolve()
 
-    # delete if file exists
-    delete_exist(full_path)
-
-    # create file
-    workbook = create_workbook(column, row, title)
-
-    workbook.save(full_path)
+    # 生成文件
+    create_workbook(column, row, title, full_path)

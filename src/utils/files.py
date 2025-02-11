@@ -1,62 +1,42 @@
 from pathlib import Path
 
 
-def get_file_extension(file: str) -> str:
+def textLoader(file_name: str) -> list:
     """
-    返回文件扩展名
+    从文件加载文本，然后按照空行为界限分为上下两段（行标题和列标题）。
 
     Args:
-        - file (str): The name or path of the file.
+        file_name (str): 要读取的文件路径。
 
     Returns:
-        - str: The file extension, including the dot.
-    """
-    return Path(file).suffix
-
-
-def textLoader(fileName: str) -> list[list[str]]:
-    """
-    根据扩展名选择加载器。
-
-    Args:
-        - fileName (str): 带扩展名的文件名
-
-    Returns:
-        - list[list[str]], len = 2: 返回上下两段处理好的内容
+        list: 包含两个列表的列表，分别表示上下段的内容。
 
     Raises:
-        - ValueError: 仅限 .txt 或 .json 文件
+        ValueError: 如果文件无法读取或格式不符合预期。
     """
-    extension = get_file_extension(fileName)
-    if ".txt" == extension:
-        return textfile_textLoader(fileName)
-    raise ValueError("File must have a .txt or .json extension")
 
+    try:
+        file_name = Path(file_name)
+        with open(file_name, "r", encoding="utf-8") as file:
+            sections = [[], []]  # 上下段
+            current_section = 0
 
-def textfile_textLoader(fileName: str) -> list[list[str]]:
-    """
-    从 .txt 内读取文件然后格式化
-    格式化：读取文件，把两段文本分出来
+            for line in file:
+                line = line.replace("\t", "    ")  # 部分地方导出的文件会有水平制表符
 
-    Args:
-        - fileName (str): 文件名
+                # 切段
+                if 0 == current_section and not line.strip():
+                    current_section += 1
+                    continue
 
-    Returns:
-        - list[list[str]]: 分好的两段文字（上下段）
-    """
-    with open(fileName, "r", encoding="utf-8") as file:
-        lines = [[], []]  # 上下段
-        pointer = 0
-        for line in file:
-            line = line.replace("\t", "    ")  # 部分地方导出的文件会有水平制表符
+                if line.strip():
+                    sections[current_section].append(line)
 
-            # 切段
-            if pointer < 1 and "" == line.strip():
-                pointer += 1
+            return sections
 
-            if line.strip() != "":
-                lines[pointer].append(line)
-
-        return lines
-
-    print("Error: Fail to load from textfile.")
+    except FileNotFoundError:
+        raise ValueError(f"Error: File '{file_name}' not found.")
+    except IOError:
+        raise ValueError(f"Error: Unable to read file '{file_name}'.")
+    except Exception as e:
+        raise ValueError(f"Error: An unexpected error occurred while reading the file: {e}")
